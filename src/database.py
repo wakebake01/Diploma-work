@@ -9,11 +9,22 @@ class Database:
         # Подключаемся к базе. check_same_thread=False нужен для работы внутри Streamlit
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.create_table()
-
+        
+    def is_text_processed(self, text):
+        """Проверяет, существует ли уже такой текст в базе данных (Дубликаттарды сүзу)."""
+        try:
+            # ТҮЗЕТІЛДІ: Бұрын осы жерде қате болған. Енді әр сұраныс өз курсорын ашады.
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT 1 FROM opinions WHERE text = ?", (text,))
+            result = cursor.fetchone()
+            return result is not None
+        except Exception as e:
+            print(f"Ошибка проверки базы данных: {e}")
+            return False
+            
     def create_table(self):
         cursor = self.conn.cursor()
         # Создаем таблицу, если её еще нет. 
-        # Добавили колонку 'source' для разделения ТГ, Инсты и Google Forms!
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS opinions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
